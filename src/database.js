@@ -28,7 +28,19 @@ async function iniciarBanco() {
         )
     `);
 
-    console.log("Banco de dados e tabelas inicializados com sucesso!");
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS reservas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            usuario_id INTEGER NOT NULL,
+            quarto_id INTEGER NOT NULL,
+            data_entrada TEXT NOT NULL,
+            data_saida TEXT NOT NULL,
+            FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+            FOREIGN KEY (quarto_id) REFERENCES quartos(id)
+        )
+    `);
+
+    console.log("Banco de dados e todas as tabelas inicializados com sucesso!");
     return db;
 }
 
