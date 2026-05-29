@@ -2,12 +2,16 @@ const express = require('express');
 const app = express();
 const PORT = 3000;
 
+const authController = require('./controllers/authController');
+const quartoController = require('./controllers/quartoController');
+
 app.use(express.json());
 
-app.get('/', (req, res) => {
-    res.json({ message: "API do EcoStay funcionando com sucesso!" });
-});
+app.post('/cadastro', authController.cadastrar);
+app.post('/login', authController.login);
+
+app.post('/quartos', quartoController.cadastrarQuarto);
 
 app.listen(PORT, () => {
     console.log(`Servidor rodando com sucesso na porta ${PORT}`);
-}); 
+});
