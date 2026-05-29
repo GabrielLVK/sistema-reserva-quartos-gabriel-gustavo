@@ -1,23 +1,20 @@
 const express = require('express');
+const session = require('express-session');
+const hotelRoutes = require('./routes/hotelRoutes');
 const app = express();
 const PORT = 3000;
 
-const authController = require('./controllers/authController');
-const quartoController = require('./controllers/quartoController');
-const reservaController = require('./controllers/reservaController');
-
-const verificarToken = require('./middlewares/authMiddleware');
-
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.post('/cadastro', authController.cadastrar);
-app.post('/login', authController.login);
+app.use(session({
+    secret: 'ecostay_session_secret',
+    resave: false,
+    saveUninitialized: true
+}));
 
-app.post('/quartos', quartoController.cadastrarQuarto);
-
-app.get('/quartos', reservaController.listarQuartos);
-app.post('/reservas', verificarToken, reservaController.criarReserva); 
+app.use('/', hotelRoutes);
 
 app.listen(PORT, () => {
-    console.log(`Servidor rodando com sucesso na porta ${PORT}`);
+    console.log(`Servidor do EcoStay rodando perfeitamente na porta ${PORT}`);
 });
