@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoStay - Quartos</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-white min-h-screen font-sans p-6 text-black">
+
+    <div class="max-w-4xl mx-auto space-y-6">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold tracking-widest">ECOSTAY</h1>
+            <div id="nav-actions"></div>
+        </div>
+
+        <div id="lista-cards-quartos" class="space-y-4"></div>
+    </div>
+
+    <script>
+        async function renderizarPagina() {
+            const resQuartos = await fetch('/api/quartos');
+            const quartos = await resQuartos.json();
+            const containerQuartos = document.getElementById('lista-cards-quartos');
+            
+            containerQuartos.innerHTML = quartos.map(q => `
+                <div class="flex justify-between items-center border-2 border-black p-4 bg-white">
+                    <span class="text-lg font-medium tracking-wide">"Quarto ${q.tipo} - R$ ${q.preco}"</span>
+                    <button onclick="irParaReserva(${q.id}, '${q.tipo}')" class="bg-black text-white text-xs font-bold px-6 py-2 tracking-widest hover:bg-gray-900 transition">
+                        RESERVAR
+                    </button>
+                </div>
+            `).join('');
+
+            const resSession = await fetch('/reservas-dados');
+            const nav = document.getElementById('nav-actions');
+
+            if (resSession.status === 403 || !resSession.ok) {
+                nav.innerHTML = `<a href="/login" class="text-sm underline font-bold tracking-wider">LOGIN / ENTRAR</a>`;
+            } else {
+                nav.innerHTML = `
+                    <a href="/minhas-reservas" class="text-sm underline font-bold tracking-wider mr-4">MINHAS RESERVAS</a>
+                    <a href="/logout" class="text-sm underline font-bold tracking-wider">SAIR</a>
+                `;
+            }
+        }
+
+        function irParaReserva(id, tipo) {
+            window.location.href = `/reservas/nova?id=${id}&tipo=${encodeURIComponent(tipo)}`;
+        }
+
+        renderizarPagina();
+    </script>
+</body>
+</html>

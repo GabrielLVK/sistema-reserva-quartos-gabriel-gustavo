@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoStay Admin - Controle de Reservas</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-white min-h-screen font-sans p-6 text-black">
+
+    <div class="max-w-4xl mx-auto space-y-6">
+        <div class="flex justify-between items-center mb-8 border-b-2 border-black pb-4">
+            <div>
+                <h1 class="text-2xl font-bold tracking-widest">PAINEL DE OCUPAÇÃO</h1>
+                <p class="text-xs font-bold tracking-wider text-gray-500 mt-1">TODAS AS RESERVAS DO HOTEL</p>
+            </div>
+            <div class="space-x-4">
+                <a href="/admin/quartos/novo" class="text-sm underline font-bold tracking-wider">CADASTRAR QUARTO</a>
+                <a href="/logout" class="text-sm underline font-bold tracking-wider">SAIR</a>
+            </div>
+        </div>
+
+        <div id="lista-geral-reservas" class="space-y-4">
+        </div>
+    </div>
+
+    <script>
+        async function carregarTodasReservas() {
+            const res = await fetch('/admin/api/reservas');
+            if(res.ok) {
+                const reservas = await res.json();
+                const container = document.getElementById('lista-geral-reservas');
+                
+                if(reservas.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500 italic">Nenhum hóspede realizou reservas ainda.</p>';
+                    return;
+                }
+
+                container.innerHTML = reservas.map(r => `
+                    <div class="border-2 border-black p-4 bg-white space-y-2">
+                        <div class="flex justify-between items-center font-bold tracking-wide">
+                            <span>HÓSPEDE: ${r.nomeUsuario.toUpperCase()} (ID: ${r.usuario_id})</span>
+                            <span class="bg-black text-white text-xs px-2 py-0.5">${r.status.toUpperCase()}</span>
+                        </div>
+                        <div class="text-sm tracking-wider text-gray-700">
+                            Acomodação: <span class="font-semibold">${r.tipoQuarto}</span> | 
+                            Período: <span class="font-semibold">${r.data_entrada} até ${r.data_saida}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+        carregarTodasReservas();
+    </script>
+</body>
+</html>

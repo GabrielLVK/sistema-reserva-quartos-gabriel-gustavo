@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoStay - Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-white min-h-screen flex flex-col items-center justify-center font-sans p-4 text-black">
+
+    <div class="w-full max-w-md space-y-4">
+        <h2 class="text-xl font-bold tracking-wider mb-2">LOGIN</h2>
+        <form action="/login" method="POST" class="space-y-3">
+            <input type="email" name="email" placeholder="EMAIL" required class="w-full border-2 border-black p-3 focus:outline-none placeholder-black font-medium">
+            <input type="password" name="senha" placeholder="SENHA" required class="w-full border-2 border-black p-3 focus:outline-none placeholder-black font-medium">
+            <button type="submit" class="w-full bg-black text-white font-bold py-3 tracking-widest hover:bg-gray-900 transition">
+                LOGIN
+            </button>
+        </form>
+        <div class="text-center">
+            <a href="/cadastro" class="text-xs underline font-bold tracking-wider">NÃO TENHO CONTA (CADASTRAR)</a>
+        </div>
+    </div>
+
+</body>
+</html>

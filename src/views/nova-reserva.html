@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoStay - Nova Reserva</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-white min-h-screen flex items-center justify-center font-sans p-4 text-black">
+
+    <div class="w-full max-w-md border-2 border-black p-8 bg-white space-y-6">
+        <div class="text-center">
+            <h1 class="text-xl font-bold tracking-widest border-b-2 border-black pb-2">CRIAÇÃO DE RESERVA</h1>
+            <p id="nome-quarto" class="text-sm font-bold tracking-wider mt-4 text-gray-700">NOVA RESERVA PARA O QUARTO...</p>
+        </div>
+
+        <form action="/reservas" method="POST" class="space-y-4">
+            <input type="hidden" id="input-quarto-id" name="quarto_id">
+
+            <div>
+                <label class="block text-xs font-bold tracking-wider mb-1">DATA ENTRADA</label>
+                <input type="date" name="data_entrada" required class="w-full border-2 border-black p-3 focus:outline-none font-medium">
+            </div>
+            
+            <div>
+                <label class="block text-xs font-bold tracking-wider mb-1">DATA SAIDA</label>
+                <input type="date" name="data_saida" required class="w-full border-2 border-black p-3 focus:outline-none font-medium">
+            </div>
+
+            <button type="submit" class="w-full bg-black text-white font-bold py-3 tracking-widest hover:bg-gray-900 transition mt-6">
+                CONFIRMAR RESERVA
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const quartoId = urlParams.get('id');
+        const quartoTipo = urlParams.get('tipo');
+
+        if(quartoId && quartoTipo) {
+            document.getElementById('input-quarto-id').value = quartoId;
+            document.getElementById('nome-quarto').innerText = `NOVA RESERVA PARA O QUARTO ${quartoTipo.toUpperCase()}`;
+        }
+    </script>
+</body>
+</html>

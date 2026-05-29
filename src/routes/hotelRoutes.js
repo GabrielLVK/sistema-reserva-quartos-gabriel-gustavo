@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
 const repo = require('../repositories/hotelRepository');
 const service = require('../services/hotelService');
 
 function authMiddleware(req, res, next) {
-    if (!req.session || !req.session.usuario) return res.redirect('/login');
+    if (!req.session || !req.session.usuario) return res.redirect('/erro');
     next();
 }
 
@@ -15,64 +16,85 @@ function adminMiddleware(req, res, next) {
     next();
 }
 
-router.get('/', (req, res) => res.send('<h1>EcoStay Home</h1><p>Bem-vindo ao hotel!</p><a href="/quartos">Ver Quartos</a> | <a href="/login">Login</a>'));
-router.get('/quartos', (req, res) => res.json(repo.listarTodosQuartos()));
-router.get('/login', (req, res) => res.send('<h2>Login</h2><form method="POST" action="/login"><input type="email" name="email" placeholder="Email"><input type="password" name="senha" placeholder="Senha"><button type="submit">Entrar</button></form>'));
+router.get('/', (req, res) => res.sendFile(path.join(__dirname, '..', 'views', 'home.html')));
+router.get('/cadastro', (req, res) => res.sendFile(path.join(__dirname, '..', 'views', 'cadastro.html')));
+router.get('/login', (req, res) => res.sendFile(path.join(__dirname, '..', 'views', 'login.html')));
+router.get('/catalogo', (req, res) => res.sendFile(path.join(__dirname, '..', 'views', 'dashboard.html')));
+router.get('/reservas/nova', authMiddleware, (req, res) => res.sendFile(path.join(__dirname, '..', 'views', 'nova-reserva.html')));
+router.get('/erro', (req, res) => res.sendFile(path.join(__dirname, '..', 'views', 'erro.html')));
+
+router.get('/minhas-reservas', authMiddleware, (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'views', 'minhas-reservas.html'));
+});
+
+router.get('/admin/reservas', authMiddleware, adminMiddleware, (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'views', 'admin-reservas.html'));
+});
+
+router.get('/admin/quartos/novo', authMiddleware, adminMiddleware, (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'views', 'admin.html'));
+});
+
+router.get('/api/quartos', (req, res) => res.json(repo.listarTodosQuartos()));
 
 router.post('/login', (req, res) => {
     try {
-        if(req.body.email === "admin@ecostay.com" && req.body.senha === "admin123") {
+        const { email, senha } = req.body;
+        if (email === "admin@ecostay.com" && senha === "admin123") {
             req.session.usuario = { id: 99, nome: "Admin", role: "admin" };
-            return res.send("Logado como Admin! Vá para /admin/quartos/novo");
+            return res.redirect('/admin/reservas'); // Admin entra direto na listagem de reservas criadas
         }
-        const usuario = service.autenticar(req.body.email, req.body.senha);
-        req.session.usuario = usuario;
-        res.redirect('/reservas');
-    } catch (err) { res.send(err.message); }
+        req.session.usuario = service.autenticar(email, senha);
+        res.redirect('/catalogo');
+    } catch (err) { res.send(`<h3>${err.message}</h3><a href="/login">Voltar</a>`); }
 });
 
-router.get('/cadastro', (req, res) => res.send('<h2>Cadastro</h2><form method="POST" action="/cadastro"><input type="text" name="nome" placeholder="Nome"><input type="email" name="email" placeholder="Email"><input type="password" name="senha" placeholder="Senha"><button type="submit">Cadastrar</button></form>'));
 router.post('/cadastro', (req, res) => {
     try {
         service.cadastrarHospede(req.body.nome, req.body.email, req.body.senha);
         res.redirect('/login');
-    } catch (err) { res.send(err.message); }
+    } catch (err) { res.send(`<h3>${err.message}</h3><a href="/cadastro">Voltar</a>`); }
 });
 
-router.get('/reservas', authMiddleware, (req, res) => {
+router.get('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/login');
+});
+
+router.get('/reservas-dados', (req, res) => {
+    if (!req.session || !req.session.usuario) return res.status(403).json({ error: "Não autorizado" });
     const minhasReservas = repo.listarReservasPorUsuario(req.session.usuario.id);
     res.json({ usuario: req.session.usuario, reservas: minhasReservas });
 });
+
+router.get('/admin/api/reservas', authMiddleware, adminMiddleware, (req, res) => {
+    const listaRaw = repo.listarTodasReservasGerais();
+    
+    const listaCompleta = listaRaw.map(r => {
+        const cliente = repo.buscarUsuarioPorId(r.usuario_id);
+        return {
+            ...r,
+            nomeUsuario: cliente ? cliente.nome : "Usuário Admin"
+        };
+    });
+    res.json(listaCompleta);
+});
+
 router.post('/reservas', authMiddleware, (req, res) => {
     try {
         service.criarReserva(req.session.usuario.id, req.body.quarto_id, req.body.data_entrada, req.body.data_saida);
-        res.redirect('/reservas');
-    } catch (err) { res.send(err.message); }
-});
-router.post('/reservas/:id/cancelar', authMiddleware, (req, res) => {
-    repo.cancelarReserva(req.params.id);
-    res.redirect('/reservas');
-});
-router.get('/logout', (req, res) => {
-    req.session.destroy();
-    res.redirect('/');
+        res.redirect('/minhas-reservas'); // Redireciona direto para a página separada de reservas!
+    } catch (err) { res.send(`<h3>Erro: ${err.message}</h3><a href="/catalogo">Voltar</a>`); }
 });
 
-router.get('/admin/quartos/novo', authMiddleware, adminMiddleware, (req, res) => {
-    res.send('<h2>Admin - Novo Quarto</h2><form method="POST" action="/admin/quartos"><input type="text" name="numero" placeholder="Num"><input type="text" name="tipo" placeholder="Tipo"><input type="number" name="preco" placeholder="Preço"><button type="submit">Salvar</button></form>');
+router.post('/reservas/:id/cancelar', authMiddleware, (req, res) => {
+    repo.cancelarReserva(req.params.id);
+    res.redirect('/minhas-reservas');
 });
+
 router.post('/admin/quartos', authMiddleware, adminMiddleware, (req, res) => {
-    repo.salvarQuarto(req.body);
-    res.send("Quarto criado! Verifique em /quartos");
+    repo.salvarQuarto({ numero: req.body.numero, tipo: req.body.tipo, preco: parseFloat(req.body.preco), descricao: req.body.descricao });
+    res.redirect('/admin/reservas');
 });
-router.post('/admin/quartos/:id/editar', authMiddleware, adminMiddleware, (req, res) => {
-    repo.atualizarQuarto(req.params.id, req.body);
-    res.send("Quarto atualizado!");
-});
-router.post('/admin/quartos/:id/deletar', authMiddleware, adminMiddleware, (req, res) => {
-    repo.deletarQuarto(req.params.id);
-    res.send("Quarto deletado!");
-});
-router.get('/erro', (req, res) => res.send("<h1>Acesso Negado / Não Autorizado</h1>"));
 
 module.exports = router;

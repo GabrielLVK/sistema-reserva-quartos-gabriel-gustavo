@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoStay - Cadastrar Quarto</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-white min-h-screen flex items-center justify-center font-sans p-4 text-black">
+
+    <div class="w-full max-w-md border-2 border-black p-8 bg-white space-y-6">
+        <h1 class="text-xl font-bold tracking-widest text-center border-b-2 border-black pb-2">CADASTRAR QUARTO</h1>
+
+        <form action="/admin/quartos" method="POST" class="space-y-4">
+            <input type="text" name="numero" placeholder="NÚMERO DO QUARTO" required class="w-full border-2 border-black p-3 focus:outline-none placeholder-black font-medium">
+            <input type="text" name="tipo" placeholder="TIPO DO QUARTO" required class="w-full border-2 border-black p-3 focus:outline-none placeholder-black font-medium">
+            <input type="number" name="preco" placeholder="PREÇO DIÁRIA" required class="w-full border-2 border-black p-3 focus:outline-none placeholder-black font-medium">
+            <input type="text" name="descricao" placeholder="BREVE DESCRIÇÃO (OPCIONAL)" class="w-full border-2 border-black p-3 focus:outline-none placeholder-black font-medium">
+
+            <button type="submit" class="w-full bg-black text-white font-bold py-3 tracking-widest hover:bg-gray-900 transition">
+                CADASTRAR
+            </button>
+        </form>
+        <div class="text-center pt-2">
+            <a href="/logout" class="text-xs underline font-bold tracking-wider">SAIR DO MODO ADMIN</a>
+        </div>
+    </div>
+</body>
+</html>
